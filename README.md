@@ -1,4 +1,4 @@
-# Hello Fresh
+# Hello Food
 
 A toy micro-service which manages imaginary orders for meals.
 
@@ -17,3 +17,5 @@ Before commiting run `pre-commit install`.
 * <https://www.youtube.com/watch?v=q8DkatMZvUs&t=1573s>
 * <https://www.youtube.com/watch?v=GaWs-LenLYE&t=0s>
 * <https://www.youtube.com/watch?v=psjz6rwzMdk&t=93s>
+
+* <https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/adding-self-hosted-runners>

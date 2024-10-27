@@ -1,0 +1,21 @@
+name: pre-commit
+
+on:
+  push:
+    branches: [master, main, test-*]
+
+permissions:
+  id-token: write
+  contents: read
+  packages: read
+
+jobs:
+  pre-commit:
+    runs-on: randi
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: 3.11
+    - name: Run pre-commit
+      uses: pre-commit/action@v3.0.1
