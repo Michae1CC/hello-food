@@ -7,6 +7,8 @@ A toy micro-service which manages imaginary orders for meals.
 Run `pip install -e '.[dev,test]'` to install all python dependencies. Run
 `flask --app ./hello-food/app.py run` to start the application.
 
+Before commiting run `pre-commit install`.
+
 ## Resources
 
 * <https://github.com/asottile/awshelp/tree/main>
