@@ -9,7 +9,13 @@ Run `pip install -e '.[dev,test]'` to install all python dependencies. Run
 
 Before commiting run `pre-commit install`.
 
-`nohup ./run.sh &> log.txt &`
+## MVP
+
+* Place food deliveries
+* Track key handling of customer deliveries
+* Send invoices to customers automatically when the cargo reaches some point in its handling
+* Update the delivery address
+* Users can browse meals by cuisine
 
 ## Resources
 
@@ -21,4 +27,5 @@ Before commiting run `pre-commit install`.
 * <https://www.youtube.com/watch?v=psjz6rwzMdk&t=93s>
 * <https://github.com/actions/runner-images#available-environments>
 
+* <https://www.visual-paradigm.com/guide/uml-unified-modeling-language/uml-class-diagram-tutorial/>
 * <https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/adding-self-hosted-runners>
