@@ -1,12 +1,17 @@
-from abc import abstractmethod, ABC
+import logging
+from abc import ABC
 from typing import Any, Self
 
+from ..log import logger_level_property, Identified, class_logger
 from ..mixins import FromJsonMixin
 
 
-class User(FromJsonMixin, ABC):
+class User(FromJsonMixin, Identified, ABC):
+
+    level = logger_level_property()
 
     def __init__(self, email: str, name: str, meals_per_week: int) -> None:
+        self.level = logging.INFO
         self.email: str = email
         self.name: str = name
         self.meals_per_week: int = meals_per_week
