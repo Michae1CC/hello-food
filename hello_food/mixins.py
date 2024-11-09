@@ -4,7 +4,7 @@ from typing import Any, Self, TypeVar
 _T = TypeVar("_T", bound=str)
 
 
-class FromJsonMixin(ABC):
+class JsonFactory(ABC):
     _CONVERT_FAILURE = "Could not convert attribute %s as %s for class %s"
 
     @classmethod

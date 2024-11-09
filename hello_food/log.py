@@ -2,13 +2,8 @@ from __future__ import annotations
 
 import logging
 import sys
-from typing import Any
 from typing import Optional
-from typing import overload
-from typing import Set
-from typing import Type
 from typing import TypeVar
-from typing import Union
 from typing import Literal
 
 LOGGING_LEVELS = (
@@ -39,7 +34,7 @@ def _add_default_handler(logger: logging.Logger) -> None:
     logger.addHandler(handler)
 
 
-def _qual_logger_name_for_cls(cls: Type[Identified]) -> str:
+def _qual_logger_name_for_cls(cls: type[Identified]) -> str:
     """
     Creates a qualified logger name for the provided class
     """
@@ -95,7 +90,7 @@ def instance_logger(instance: Identified, level: LOGGING_LEVELS) -> None:
 class logger_level_property:
 
     def __get__(
-        self, instance: Optional[Identified], owner: Type[Identified]
+        self, instance: Optional[Identified], owner: type[Identified]
     ) -> LOGGING_LEVELS | logger_level_property:
         if instance is None:
             return self

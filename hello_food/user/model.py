@@ -3,10 +3,10 @@ from abc import ABC
 from typing import Any, Self
 
 from ..log import logger_level_property, Identified, class_logger
-from ..mixins import FromJsonMixin
+from ..mixins import JsonFactory
 
 
-class User(FromJsonMixin, Identified, ABC):
+class User(JsonFactory, Identified, ABC):
 
     level = logger_level_property()
 

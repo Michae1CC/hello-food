@@ -26,6 +26,7 @@ Before commiting run `pre-commit install`.
 * <https://www.youtube.com/watch?v=GaWs-LenLYE&t=0s>
 * <https://www.youtube.com/watch?v=psjz6rwzMdk&t=93s>
 * <https://github.com/actions/runner-images#available-environments>
+* <https://docs.sqlalchemy.org/en/20/tutorial/index.html#unified-tutorial>
 
 * <https://www.visual-paradigm.com/guide/uml-unified-modeling-language/uml-class-diagram-tutorial/>
 * <https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/adding-self-hosted-runners>
