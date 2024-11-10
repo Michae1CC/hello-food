@@ -34,6 +34,20 @@ class JsonFactory(ABC):
             raise ValueError(message) from e
 
     @classmethod
+    def _parse_float_from_json(
+        cls, json_as_dict: dict[str, Any], attribute_name: str
+    ) -> float:
+        try:
+            return float(cls._get_attribute_from_json(json_as_dict, attribute_name))
+        except ValueError as e:
+            message = cls._CONVERT_FAILURE % (
+                attribute_name,
+                float.__name__,
+                cls.__name__,
+            )
+            raise ValueError(message) from e
+
+    @classmethod
     def _parse_str_from_json(
         cls, json_as_dict: dict[str, Any], attribute_name: str
     ) -> str:
