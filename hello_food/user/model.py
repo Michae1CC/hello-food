@@ -2,7 +2,7 @@ import logging
 from abc import ABC
 from typing import Any, Self
 
-from sqlalchemy import select
+from sqlalchemy import select, Select
 
 from .orm import UserORM, TrialUserORM, PaidUserORM
 from ..log import logger_level_property, Identified, class_logger
@@ -61,16 +61,28 @@ class TrialUserRepository:
     """
 
     @classmethod
+    def _get_from_sqlalchemy_statement(
+        cls, statement: Select[tuple[TrialUserORM]]
+    ) -> TrialUser:
+        """
+        Gets a user from the persistent layer using the provided sqlalchemy
+        select statement.
+        """
+
+        with Session() as session:
+            user_orm: TrialUserORM = session.execute(statement).scalar_one()
+
+        return TrialUser(user_orm)
+
+    @classmethod
     def get_from_id(cls, id: int) -> TrialUser:
         """
         Gets a user from the persistent layer from the user's id.
         """
 
-        with Session() as session:
-            statement = select(TrialUserORM).where(TrialUserORM.id == id)
-            user_orm: TrialUserORM = session.execute(statement).scalar_one()
+        statement = select(TrialUserORM).where(TrialUserORM.id == id)
 
-        return TrialUser(user_orm)
+        return cls._get_from_sqlalchemy_statement(statement)
 
     @classmethod
     def get_from_email(cls, email: str) -> TrialUser:
@@ -78,11 +90,9 @@ class TrialUserRepository:
         Gets a user from the persistent layer from the user's email.
         """
 
-        with Session() as session:
-            statement = select(TrialUserORM).where(TrialUserORM.email == email)
-            user_orm: TrialUserORM = session.execute(statement).scalar_one()
+        statement = select(TrialUserORM).where(TrialUserORM.email == email)
 
-        return TrialUser(user_orm)
+        return cls._get_from_sqlalchemy_statement(statement)
 
 
 class TrialUserFactory(JsonFactory):
