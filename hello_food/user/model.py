@@ -1,21 +1,23 @@
 import logging
-from abc import ABC
-from typing import Any, Self
+from abc import ABC, abstractmethod
+from typing import Any, Mapping, Self
 
 from sqlalchemy import select, Select
+from sqlalchemy.orm import Session
 
 from .orm import UserORM, TrialUserORM, PaidUserORM
 from ..log import logger_level_property, Identified, class_logger
 from ..mixins import JsonFactory
-from ..sqlalchemy import Session
+from ..sqlalchemy import session_maker
 
 
-class User(Identified, ABC):
+class User(ABC):
 
-    level = logger_level_property()
-
-    def __init__(self) -> None:
-        self.level = logging.INFO
+    def __init__(self, email: str, name: str, meals_per_week: int) -> None:
+        super().__init__()
+        self.email: str = email
+        self.name: str = name
+        self.meals_per_week = meals_per_week
 
     @classmethod
     def _assert_email_has_valid_format(cls, email: str) -> None:
@@ -38,9 +40,17 @@ class User(Identified, ABC):
 
 class TrialUser(User):
 
-    def __init__(self, orm: TrialUserORM) -> None:
-        super().__init__()
-        self._orm = orm
+    def __init__(
+        self,
+        email: str,
+        name: str,
+        meals_per_week: int,
+        trial_end_date: int,
+        discount_value: float,
+    ) -> None:
+        super().__init__(email, name, meals_per_week)
+        self.trial_end_date = trial_end_date
+        self.discount_value = discount_value
 
     @classmethod
     def _assert_trial_end_date_is_unix_time_epoch(cls, trial_end_date: int) -> None:
@@ -53,11 +63,35 @@ class TrialUser(User):
             and "The discount value must be a decimal value between 0 and 1"
         )
 
+    @classmethod
+    def from_orm(cls, orm: TrialUserORM) -> Self:
+        return cls(
+            orm.email,
+            orm.name,
+            orm.meals_per_week,
+            orm.trial_end_date,
+            orm.discount_value,
+        )
 
-class TrialUserRepository:
+    def __str__(self) -> str:
+        return f"TrialUser(name={self.name}, email={self.email}, meals_per_week={self.meals_per_week}, trial_end_date={self.trial_end_date}, discount_value={self.discount_value})"
+
+
+class TrialUserRepository(ABC):
+
+    @classmethod
+    @abstractmethod
+    def get_from_email(self, email: str) -> TrialUser:
+        """
+        Gets a user from the persistent layer from the user's email.
+        """
+        ...
+
+
+class TrialUserSqlRepository(TrialUserRepository, Identified):
     """
     Provides an interface to reconstitute existing users from the persistent
-    layer.
+    layer. See pg 88
     """
 
     @classmethod
@@ -69,20 +103,11 @@ class TrialUserRepository:
         select statement.
         """
 
-        with Session() as session:
+        with session_maker() as session:
             user_orm: TrialUserORM = session.execute(statement).scalar_one()
+            trial_user = TrialUser.from_orm(user_orm)
 
-        return TrialUser(user_orm)
-
-    @classmethod
-    def get_from_id(cls, id: int) -> TrialUser:
-        """
-        Gets a user from the persistent layer from the user's id.
-        """
-
-        statement = select(TrialUserORM).where(TrialUserORM.id == id)
-
-        return cls._get_from_sqlalchemy_statement(statement)
+        return trial_user
 
     @classmethod
     def get_from_email(cls, email: str) -> TrialUser:
@@ -95,7 +120,29 @@ class TrialUserRepository:
         return cls._get_from_sqlalchemy_statement(statement)
 
 
-class TrialUserFactory(JsonFactory):
+class TrialUserFactory(JsonFactory[TrialUser], ABC):
+    """
+    Provides an interface to create new users and commit them to the persistent
+    layer.
+    """
+
+    @classmethod
+    @abstractmethod
+    def create_from_values(
+        self,
+        email: str,
+        name: str,
+        meals_per_week: int,
+        trial_end_date: int,
+        discount_value: float,
+    ) -> TrialUser:
+        """
+        Create a new trial user using the provided parameters.
+        """
+        ...
+
+
+class TrialUserSqlFactory(TrialUserFactory, Identified):
     """
     Provides an interface to create new users and commit them to the persistent
     layer.
@@ -111,10 +158,6 @@ class TrialUserFactory(JsonFactory):
         discount_value: float,
     ) -> TrialUser:
         """
-        Create a new user using the provided parameters.
-        """
-
-        """
         A factory is responsible for ensuring all invariants are met for the
         object or AGGREGATE it creates; yet you should always think twice
         before removing the rules applying to an object outside that object.
@@ -126,22 +169,25 @@ class TrialUserFactory(JsonFactory):
         TrialUser._assert_trial_end_date_is_unix_time_epoch(trial_end_date)
         TrialUser._assert_discount_is_decimal_value(discount_value)
 
-        user_orm: TrialUserORM = TrialUserORM(
-            name=name,
-            email=email,
-            meals_per_week=meals_per_week,
-            trial_end_date=trial_end_date,
-            discount_value=discount_value,
-        )
+        # TODO: There should be a check to ensure a user with the same email
+        # has not been created, this should probably happen in the controller.
 
-        with Session() as session:
+        with session_maker() as session:
+            user_orm: TrialUserORM = TrialUserORM(
+                name=name,
+                email=email,
+                meals_per_week=meals_per_week,
+                trial_end_date=trial_end_date,
+                discount_value=discount_value,
+            )
             session.add(user_orm)
             session.commit()
+            trial_user = TrialUser.from_orm(user_orm)
 
-        return TrialUser(user_orm)
+        return trial_user
 
     @classmethod
-    def create_from_json(cls, json_as_dict: dict[str, Any]) -> TrialUser:
+    def create_from_json(cls, json_as_dict: Mapping[str, Any]) -> TrialUser:
         """
         Creates a new user from a json representation of the user.
         """

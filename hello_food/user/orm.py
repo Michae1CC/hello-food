@@ -6,9 +6,8 @@ from ..sqlalchemy import Base
 
 class UserORM(Base):
     __tablename__ = "User"
-    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(primary_key=True)
     name: Mapped[str]
-    email: Mapped[str]
     meals_per_week: Mapped[int]
     type: Mapped[str]
 
@@ -21,7 +20,7 @@ class UserORM(Base):
 
 class TrialUserORM(UserORM):
     __tablename__ = "TrialUser"
-    id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
+    email: Mapped[str] = mapped_column(ForeignKey("User.email"), primary_key=True)
     trial_end_date: Mapped[int]
     discount_value: Mapped[float]
 
@@ -32,7 +31,7 @@ class TrialUserORM(UserORM):
 
 class PaidUserORM(UserORM):
     __tablename__ = "PaidUser"
-    id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
+    email: Mapped[str] = mapped_column(ForeignKey("User.email"), primary_key=True)
     account_renewal_date: Mapped[int]
 
     __mapper_args__ = {

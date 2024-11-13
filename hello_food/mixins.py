@@ -1,15 +1,16 @@
 from abc import abstractmethod, ABC
-from typing import Any, Self, TypeVar, cast
+from typing import Any, Mapping, Self, TypeVar, Generic, cast
 
 _T = TypeVar("_T", bound=int | float | str)
+_S = TypeVar("_S")
 
 
-class JsonFactory(ABC):
+class JsonFactory(Generic[_S], ABC):
     _CONVERT_FAILURE = "Could not convert attribute %s as %s for class %s"
 
     @classmethod
     def _get_attribute_from_json(
-        cls, json_as_dict: dict[str, Any], attribute_name: str
+        cls, json_as_dict: Mapping[str, Any], attribute_name: str
     ) -> Any:
         try:
             return json_as_dict[attribute_name]
@@ -21,7 +22,7 @@ class JsonFactory(ABC):
 
     @classmethod
     def _parse_value_from_json(
-        cls, json_as_dict: dict[str, Any], attribute_name: str, type_: type[_T]
+        cls, json_as_dict: Mapping[str, Any], attribute_name: str, type_: type[_T]
     ) -> _T:
         try:
             return cast(
@@ -37,22 +38,22 @@ class JsonFactory(ABC):
 
     @classmethod
     def _parse_int_from_json(
-        cls, json_as_dict: dict[str, Any], attribute_name: str
+        cls, json_as_dict: Mapping[str, Any], attribute_name: str
     ) -> int:
         return cls._parse_value_from_json(json_as_dict, attribute_name, int)
 
     @classmethod
     def _parse_float_from_json(
-        cls, json_as_dict: dict[str, Any], attribute_name: str
+        cls, json_as_dict: Mapping[str, Any], attribute_name: str
     ) -> float:
         return cls._parse_value_from_json(json_as_dict, attribute_name, float)
 
     @classmethod
     def _parse_str_from_json(
-        cls, json_as_dict: dict[str, Any], attribute_name: str
+        cls, json_as_dict: Mapping[str, Any], attribute_name: str
     ) -> str:
         return cls._parse_value_from_json(json_as_dict, attribute_name, str)
 
     @classmethod
     @abstractmethod
-    def from_json(cls, json_as_dict: dict[str, Any]) -> Self: ...
+    def create_from_json(cls, json_as_dict: Mapping[str, Any]) -> _S: ...
