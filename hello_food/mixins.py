@@ -1,5 +1,5 @@
 from abc import abstractmethod, ABC
-from typing import Any, Mapping, Self, TypeVar, Generic, cast
+from typing import Any, Mapping, TypeVar, Generic, cast
 
 _T = TypeVar("_T", bound=int | float | str)
 _S = TypeVar("_S")

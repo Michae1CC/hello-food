@@ -1,7 +1,7 @@
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
-from ..sqlalchemy import Base
+from ..sql import Base
 
 
 class UserORM(Base):
@@ -29,10 +29,9 @@ class TrialUserORM(UserORM):
     }
 
 
-class PaidUserORM(UserORM):
+class StandardUserORM(UserORM):
     __tablename__ = "PaidUser"
     email: Mapped[str] = mapped_column(ForeignKey("User.email"), primary_key=True)
-    account_renewal_date: Mapped[int]
 
     __mapper_args__ = {
         "polymorphic_identity": "paid_user",

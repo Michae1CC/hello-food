@@ -1,6 +1,7 @@
 from flask import Flask
-from .sqlalchemy import Base, engine, session_maker
+from .sql import Base, engine, session_maker
 from .user import TrialUserSqlFactory, TrialUserSqlRepository
+from .update_driver import update_sql_entities
 
 
 app = Flask(__name__)
@@ -14,7 +15,6 @@ def hello() -> str:
     return "<p>Oh hi!</p>"
 
 
-@app.route("/create")
 def create_user() -> str:
     f = TrialUserSqlFactory()
     user = f.create_from_json(
@@ -38,3 +38,17 @@ def get_user() -> str:
     print(user)
 
     return "<p>Successful get</p>"
+
+
+@app.route("/update_meals")
+def update_meals() -> str:
+    f = TrialUserSqlRepository()
+    user = f.get_from_email("hi@gmail.com")
+    if user is not None:
+        user.meals_per_week = 42
+        update_sql_entities(user)
+
+    return "<p>Successful get</p>"
+
+
+create_user()

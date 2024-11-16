@@ -1,14 +1,13 @@
-import logging
 from abc import ABC, abstractmethod
-from typing import Any, Mapping, Self
+from typing import override, Any, Mapping, Self
 
 from sqlalchemy import select, Select
-from sqlalchemy.orm import Session
 
-from .orm import UserORM, TrialUserORM, PaidUserORM
+from .orm import UserORM, TrialUserORM, StandardUserORM
+from ..util import get_current_unix_epoch
 from ..log import logger_level_property, Identified, class_logger
 from ..mixins import JsonFactory
-from ..sqlalchemy import session_maker
+from ..sql import session_maker
 
 
 class User(ABC):
@@ -36,6 +35,12 @@ class User(ABC):
     ) -> None:
         cls._assert_email_has_valid_format(email)
         cls._assert_meals_per_week_is_positive_integer(meals_per_week)
+
+    @abstractmethod
+    def get_user_discount_as_decimal(self) -> float: ...
+
+    @abstractmethod
+    def is_locked_from_due_payment(self) -> bool: ...
 
 
 class TrialUser(User):
@@ -76,12 +81,20 @@ class TrialUser(User):
     def __str__(self) -> str:
         return f"TrialUser(name={self.name}, email={self.email}, meals_per_week={self.meals_per_week}, trial_end_date={self.trial_end_date}, discount_value={self.discount_value})"
 
+    @override
+    def get_user_discount_as_decimal(self) -> float:
+        return self.discount_value
+
+    @override
+    def is_locked_from_due_payment(self) -> bool:
+        return self.trial_end_date < get_current_unix_epoch()
+
 
 class TrialUserRepository(ABC):
 
     @classmethod
     @abstractmethod
-    def get_from_email(self, email: str) -> TrialUser:
+    def get_from_email(self, email: str) -> TrialUser | None:
         """
         Gets a user from the persistent layer from the user's email.
         """
@@ -97,20 +110,23 @@ class TrialUserSqlRepository(TrialUserRepository, Identified):
     @classmethod
     def _get_from_sqlalchemy_statement(
         cls, statement: Select[tuple[TrialUserORM]]
-    ) -> TrialUser:
+    ) -> TrialUser | None:
         """
         Gets a user from the persistent layer using the provided sqlalchemy
         select statement.
         """
 
         with session_maker() as session:
-            user_orm: TrialUserORM = session.execute(statement).scalar_one()
-            trial_user = TrialUser.from_orm(user_orm)
+            user_orm: TrialUserORM | None = session.execute(
+                statement
+            ).scalar_one_or_none()
+            trial_user = TrialUser.from_orm(user_orm) if user_orm is not None else None
 
         return trial_user
 
+    @override
     @classmethod
-    def get_from_email(cls, email: str) -> TrialUser:
+    def get_from_email(cls, email: str) -> TrialUser | None:
         """
         Gets a user from the persistent layer from the user's email.
         """
@@ -148,6 +164,7 @@ class TrialUserSqlFactory(TrialUserFactory, Identified):
     layer.
     """
 
+    @override
     @classmethod
     def create_from_values(
         cls,
@@ -169,9 +186,6 @@ class TrialUserSqlFactory(TrialUserFactory, Identified):
         TrialUser._assert_trial_end_date_is_unix_time_epoch(trial_end_date)
         TrialUser._assert_discount_is_decimal_value(discount_value)
 
-        # TODO: There should be a check to ensure a user with the same email
-        # has not been created, this should probably happen in the controller.
-
         with session_maker() as session:
             user_orm: TrialUserORM = TrialUserORM(
                 name=name,
@@ -186,6 +200,7 @@ class TrialUserSqlFactory(TrialUserFactory, Identified):
 
         return trial_user
 
+    @override
     @classmethod
     def create_from_json(cls, json_as_dict: Mapping[str, Any]) -> TrialUser:
         """
@@ -201,3 +216,168 @@ class TrialUserSqlFactory(TrialUserFactory, Identified):
         return cls.create_from_values(
             email, name, meals_per_week, trial_end_date, discount_value
         )
+
+
+class StandardUser(User):
+
+    def __init__(
+        self,
+        email: str,
+        name: str,
+        meals_per_week: int,
+    ) -> None:
+        super().__init__(email, name, meals_per_week)
+
+    @classmethod
+    def from_orm(cls, orm: StandardUserORM) -> Self:
+        return cls(
+            orm.email,
+            orm.name,
+            orm.meals_per_week,
+        )
+
+    def __str__(self) -> str:
+        return f"StandardUser(name={self.name}, email={self.email}, meals_per_week={self.meals_per_week})"
+
+    @override
+    def get_user_discount_as_decimal(self) -> float:
+        return 0.0
+
+    @override
+    def is_locked_from_due_payment(self) -> bool:
+        return False
+
+
+class StandardUserRepository(ABC):
+
+    @classmethod
+    @abstractmethod
+    def get_from_email(self, email: str) -> StandardUser | None:
+        """
+        Gets a standard user from the persistent layer from the user's email.
+        """
+        ...
+
+
+class StandardUserSqlRepository(StandardUserRepository, Identified):
+    """
+    Provides an interface to reconstitute existing standard users from the persistent
+    layer. See pg 88
+    """
+
+    @classmethod
+    def _get_from_sqlalchemy_statement(
+        cls, statement: Select[tuple[StandardUserORM]]
+    ) -> StandardUser | None:
+        """
+        Gets a standard user from the persistent layer using the provided sqlalchemy
+        select statement.
+        """
+
+        with session_maker() as session:
+            user_orm: StandardUserORM | None = session.execute(
+                statement
+            ).scalar_one_or_none()
+            standard_user = (
+                StandardUser.from_orm(user_orm) if user_orm is not None else None
+            )
+
+        return standard_user
+
+    @override
+    @classmethod
+    def get_from_email(cls, email: str) -> StandardUser | None:
+        """
+        Gets a user from the persistent layer from the user's email.
+        """
+
+        statement = select(StandardUserORM).where(StandardUserORM.email == email)
+
+        return cls._get_from_sqlalchemy_statement(statement)
+
+
+class StandardUserFactory(JsonFactory[StandardUser], ABC):
+    """
+    Provides an interface to create new users and commit them to the persistent
+    layer.
+    """
+
+    @classmethod
+    @abstractmethod
+    def create_from_values(
+        self,
+        email: str,
+        name: str,
+        meals_per_week: int,
+    ) -> StandardUser:
+        """
+        Create a new standard user using the provided parameters.
+        """
+        ...
+
+
+class StandardUserSqlFactory(StandardUserFactory, Identified):
+    """
+    Provides an interface to create new users and commit them to the persistent
+    layer.
+    """
+
+    @override
+    @classmethod
+    def create_from_values(
+        cls,
+        email: str,
+        name: str,
+        meals_per_week: int,
+    ) -> StandardUser:
+
+        User._assert_valid_base_user_values(email, name, meals_per_week)
+
+        with session_maker() as session:
+            user_orm: StandardUserORM = StandardUserORM(
+                name=name,
+                email=email,
+                meals_per_week=meals_per_week,
+            )
+            session.add(user_orm)
+            session.commit()
+            standard_user = StandardUser.from_orm(user_orm)
+
+        return standard_user
+
+    @override
+    @classmethod
+    def create_from_json(cls, json_as_dict: Mapping[str, Any]) -> StandardUser:
+        """
+        Creates a new standard user from a json representation of the user.
+        """
+
+        email = cls._parse_str_from_json(json_as_dict, "email")
+        name = cls._parse_str_from_json(json_as_dict, "name")
+        meals_per_week = cls._parse_int_from_json(json_as_dict, "meals_per_week")
+
+        return cls.create_from_values(email, name, meals_per_week)
+
+
+class UserRepository(ABC):
+
+    @classmethod
+    @abstractmethod
+    def get_from_email(self, email: str) -> User | None:
+        """
+        Gets an entity implementing the user interface from the persistent
+        layer from the user's email.
+        """
+        ...
+
+
+class UserSqlRepository(UserRepository, Identified):
+
+    @override
+    @classmethod
+    def get_from_email(self, email: str) -> User | None:
+        trial_user_repository = TrialUserSqlRepository()
+        standard_user_repository = StandardUserSqlRepository()
+        return trial_user_repository.get_from_email(
+            email
+        ) or standard_user_repository.get_from_email(email)
