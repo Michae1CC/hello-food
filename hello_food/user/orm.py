@@ -1,14 +1,18 @@
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
+from sqlalchemy.orm import relationship
 from ..sql import Base
+from ..address import AddressORM
 
 
 class UserORM(Base):
     __tablename__ = "User"
-    email: Mapped[str] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(primary_key=True, autoincrement=False)
     name: Mapped[str]
     meals_per_week: Mapped[int]
+    address_id: Mapped[int] = mapped_column(ForeignKey("Address.id"))
+    address: Mapped[AddressORM] = relationship()
     type: Mapped[str]
 
     __mapper_args__ = {
