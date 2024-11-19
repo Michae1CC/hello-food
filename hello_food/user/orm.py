@@ -8,7 +8,8 @@ from ..address import AddressORM
 
 class UserORM(Base):
     __tablename__ = "User"
-    email: Mapped[str] = mapped_column(primary_key=True, autoincrement=False)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    email: Mapped[str] = mapped_column(unique=True)
     name: Mapped[str]
     meals_per_week: Mapped[int]
     address_id: Mapped[int] = mapped_column(ForeignKey("Address.id"))
@@ -24,7 +25,7 @@ class UserORM(Base):
 
 class TrialUserORM(UserORM):
     __tablename__ = "TrialUser"
-    email: Mapped[str] = mapped_column(ForeignKey("User.email"), primary_key=True)
+    id: Mapped[int] = mapped_column(ForeignKey("User.id"), primary_key=True)
     trial_end_date: Mapped[int]
     discount_value: Mapped[float]
 
@@ -35,7 +36,7 @@ class TrialUserORM(UserORM):
 
 class StandardUserORM(UserORM):
     __tablename__ = "PaidUser"
-    email: Mapped[str] = mapped_column(ForeignKey("User.email"), primary_key=True)
+    id: Mapped[int] = mapped_column(ForeignKey("User.id"), primary_key=True)
 
     __mapper_args__ = {
         "polymorphic_identity": "paid_user",

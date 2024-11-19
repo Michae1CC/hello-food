@@ -9,13 +9,14 @@ from ..address import Address, get_address_factory
 class User(ABC):
 
     def __init__(
-        self, email: str, name: str, meals_per_week: int, address: Address
+        self, id_: int, email: str, name: str, meals_per_week: int, address_id: int
     ) -> None:
         super().__init__()
+        self.id: int = id_
         self.email: str = email
         self.name: str = name
         self.meals_per_week: int = meals_per_week
-        self.address: Address = address
+        self.address_id: int = address_id
 
     @classmethod
     def _assert_email_has_valid_format(cls, email: str) -> None:
@@ -46,14 +47,15 @@ class TrialUser(User):
 
     def __init__(
         self,
+        id_: int,
         email: str,
         name: str,
         meals_per_week: int,
         trial_end_date: int,
         discount_value: float,
-        address: Address,
+        address_id: int,
     ) -> None:
-        super().__init__(email, name, meals_per_week, address)
+        super().__init__(id_, email, name, meals_per_week, address_id)
         self.trial_end_date = trial_end_date
         self.discount_value = discount_value
 
@@ -84,12 +86,13 @@ class StandardUser(User):
 
     def __init__(
         self,
+        id_: int,
         email: str,
         name: str,
         meals_per_week: int,
-        address: Address,
+        address_id: int,
     ) -> None:
-        super().__init__(email, name, meals_per_week, address)
+        super().__init__(id_, email, name, meals_per_week, address_id)
 
     def __str__(self) -> str:
         return f"StandardUser(name={self.name}, email={self.email}, meals_per_week={self.meals_per_week})"

@@ -24,7 +24,7 @@ class TrialUserFactory(JsonFactory[TrialUser], ABC):
         meals_per_week: int,
         trial_end_date: int,
         discount_value: float,
-        address: Address,
+        address_id: int,
     ) -> TrialUser:
         """
         Create a new trial user using the provided parameters.
@@ -47,7 +47,7 @@ class TrialUserSqlFactory(TrialUserFactory, Identified):
         meals_per_week: int,
         trial_end_date: int,
         discount_value: float,
-        address: Address,
+        address_id: int,
     ) -> TrialUser:
         """
         Each creation method is atomic and enforces all invariants of the
@@ -81,17 +81,18 @@ class TrialUserSqlFactory(TrialUserFactory, Identified):
                 meals_per_week=meals_per_week,
                 trial_end_date=trial_end_date,
                 discount_value=discount_value,
-                address_id=address.id,
+                address_id=address_id,
             )
             session.add(user_orm)
             session.commit()
             trial_user = TrialUser(
+                user_orm.id,
                 user_orm.email,
                 user_orm.name,
                 user_orm.meals_per_week,
                 user_orm.trial_end_date,
                 user_orm.discount_value,
-                address,
+                address_id,
             )
 
         return trial_user
@@ -117,7 +118,7 @@ class TrialUserSqlFactory(TrialUserFactory, Identified):
         address: Address = address_factory.create_from_json(json_as_dict["address"])
 
         return cls.create_from_values(
-            email, name, meals_per_week, trial_end_date, discount_value, address
+            email, name, meals_per_week, trial_end_date, discount_value, address.id
         )
 
 
@@ -134,7 +135,7 @@ class StandardUserFactory(JsonFactory[StandardUser], ABC):
         email: str,
         name: str,
         meals_per_week: int,
-        address: Address,
+        address_id: int,
     ) -> StandardUser:
         """
         Create a new standard user using the provided parameters.
@@ -155,7 +156,7 @@ class StandardUserSqlFactory(StandardUserFactory, Identified):
         email: str,
         name: str,
         meals_per_week: int,
-        address: Address,
+        address_id: int,
     ) -> StandardUser:
 
         User._assert_valid_base_user_values(email, name, meals_per_week)
@@ -165,14 +166,16 @@ class StandardUserSqlFactory(StandardUserFactory, Identified):
                 name=name,
                 email=email,
                 meals_per_week=meals_per_week,
+                address_id=address_id,
             )
             session.add(user_orm)
             session.commit()
             standard_user = StandardUser(
+                user_orm.id,
                 user_orm.email,
                 user_orm.name,
                 user_orm.meals_per_week,
-                address,
+                address_id,
             )
 
         return standard_user
@@ -195,7 +198,7 @@ class StandardUserSqlFactory(StandardUserFactory, Identified):
         address_factory = get_address_factory()
         address: Address = address_factory.create_from_json(json_as_dict["address"])
 
-        return cls.create_from_values(email, name, meals_per_week, address)
+        return cls.create_from_values(email, name, meals_per_week, address.id)
 
 
 def get_trial_user_factory() -> TrialUserFactory:

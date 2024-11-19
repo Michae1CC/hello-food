@@ -42,21 +42,14 @@ class TrialUserSqlRepository(TrialUserRepository, Identified):
             ).scalar_one_or_none()
             if user_orm is None:
                 return None
-            address_orm = user_orm.address
-            address = Address(
-                address_orm.id,
-                address_orm.unit,
-                address_orm.street_name,
-                address_orm.suburb,
-                address_orm.postcode,
-            )
             trial_user = TrialUser(
+                user_orm.id,
                 user_orm.email,
                 user_orm.name,
                 user_orm.meals_per_week,
                 user_orm.trial_end_date,
                 user_orm.discount_value,
-                address,
+                user_orm.address_id,
             )
 
         return trial_user
@@ -106,18 +99,12 @@ class StandardUserSqlRepository(StandardUserRepository, Identified):
             if user_orm is None:
                 return None
             address_orm = user_orm.address
-            address = Address(
-                address_orm.id,
-                address_orm.unit,
-                address_orm.street_name,
-                address_orm.suburb,
-                address_orm.postcode,
-            )
             standard_user = StandardUser(
+                user_orm.id,
                 user_orm.email,
                 user_orm.name,
                 user_orm.meals_per_week,
-                address,
+                user_orm.address_id,
             )
 
         return standard_user

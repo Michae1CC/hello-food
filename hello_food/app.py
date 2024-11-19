@@ -44,7 +44,7 @@ def get_user() -> str:
     user = f.get_from_email("hi@gmail.com")
     if user is not None:
         print(user)
-        print(user.address)
+        print(user.address_id)
     else:
         print("No user found")
 
@@ -59,7 +59,7 @@ def update_meals() -> str:
     user = f.get_from_email("hi@gmail.com")
     if user is not None:
         user.meals_per_week = 42
-        user.address = new_address
+        user.address_id = new_address.id
         update_sql_entities(user)
 
     return "<p>Successful get</p>"
