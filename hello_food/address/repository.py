@@ -5,7 +5,6 @@ from sqlalchemy import select, Select
 
 from .model import Address
 from .orm import AddressORM
-from ..mixins import JsonFactory
 from ..sql import session_maker
 
 

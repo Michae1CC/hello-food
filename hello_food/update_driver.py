@@ -8,7 +8,7 @@ from .sql import session_maker
 from .address import Address, AddressORM
 from .user import User, UserORM, TrialUser, TrialUserORM, StandardUser
 
-_PERSISTENT_ENTITIES = User | TrialUser | StandardUser
+_PERSISTENT_ENTITIES = User | TrialUser | StandardUser | Address
 
 
 def update_sql_entities(*entities: _PERSISTENT_ENTITIES) -> None:
