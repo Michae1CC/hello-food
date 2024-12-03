@@ -1,8 +1,3 @@
-from typing import NamedTuple
-
-from .orm import AddressORM
-
-
 class Address:
 
     def __init__(
@@ -18,3 +13,6 @@ class Address:
     @classmethod
     def _assert_is_valid_postcode(cls, postcode: int) -> None:
         assert 0 < postcode < 10_000 and f"Invalid postcode of {postcode} provided"
+
+    def __str__(self) -> str:
+        return f"Address(id={self.id}, unit={self.unit}, street_name={self.street_name}, suburb={self.suburb}, postcode={self.postcode})"

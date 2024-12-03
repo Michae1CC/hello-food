@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
 from typing import override, Any, Mapping
 
-from .orm import AddressORM
+from sqlalchemy import insert
+
+from .orm import address_table
 from .model import Address
 from ..mixins import JsonFactory
-from ..sql import session_maker
+from ..sql import engine
 
 
 class AddressFactory(JsonFactory[Address], ABC):
@@ -41,16 +43,19 @@ class AddressSqlFactory(AddressFactory):
 
         Address._assert_is_valid_postcode(postcode)
 
-        with session_maker() as session:
-            address_orm: AddressORM = AddressORM(
-                unit=unit,
-                street_name=street_name,
-                suburb=suburb,
-                postcode=postcode,
+        with engine.connect() as conn:
+            statement = (
+                insert(address_table)
+                .values(
+                    unit=unit,
+                    street_name=street_name,
+                    suburb=suburb,
+                    postcode=postcode,
+                )
+                .returning(address_table.c.id)
             )
-            session.add(address_orm)
-            session.commit()
-            address = Address(address_orm.id, unit, street_name, suburb, postcode)
+            (address_id,) = conn.execute(statement).scalar_one()
+            address = Address(address_id, unit, street_name, suburb, postcode)
 
         return address
 

@@ -1,6 +1,4 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import create_engine, MetaData
 from sqlalchemy.pool import StaticPool
 
 engine = create_engine(
@@ -10,9 +8,4 @@ engine = create_engine(
     poolclass=StaticPool,
 )
 
-# Create a single global session maker
-session_maker = sessionmaker(engine, autoflush=False)
-
-
-class Base(DeclarativeBase):
-    pass
+metadata = MetaData()

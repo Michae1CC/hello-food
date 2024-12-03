@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
 from typing import override, Any, Mapping
 
+from sqlalchemy import insert
+
 from .model import User, TrialUser, StandardUser
 from ..address import Address, get_address_factory
-from .orm import TrialUserORM, StandardUserORM
+from .orm import user_table, trial_user_table, standard_user_table
 from ..log import Identified
-from ..sql import session_maker
+from ..sql import engine
 from ..mixins import JsonFactory
 
 
@@ -74,24 +76,33 @@ class TrialUserSqlFactory(TrialUserFactory, Identified):
         TrialUser._assert_trial_end_date_is_unix_time_epoch(trial_end_date)
         TrialUser._assert_discount_is_decimal_value(discount_value)
 
-        with session_maker() as session:
-            user_orm: TrialUserORM = TrialUserORM(
-                name=name,
-                email=email,
-                meals_per_week=meals_per_week,
+        with engine.connect() as connection:
+            user_statement = (
+                insert(user_table)
+                .values(
+                    email=email,
+                    name=name,
+                    meals_per_week=meals_per_week,
+                    address_id=address_id,
+                    type="trial_user",
+                )
+                .returning(user_table.c.id)
+            )
+            (user_id,) = connection.execute(user_statement).scalar_one()
+            trial_user_statement = insert(trial_user_table).values(
+                id=user_id,
                 trial_end_date=trial_end_date,
                 discount_value=discount_value,
-                address_id=address_id,
             )
-            session.add(user_orm)
-            session.commit()
+            connection.execute(trial_user_statement).scalar_one()
+
             trial_user = TrialUser(
-                user_orm.id,
-                user_orm.email,
-                user_orm.name,
-                user_orm.meals_per_week,
-                user_orm.trial_end_date,
-                user_orm.discount_value,
+                user_id,
+                email,
+                name,
+                meals_per_week,
+                trial_end_date,
+                discount_value,
                 address_id,
             )
 
@@ -161,20 +172,29 @@ class StandardUserSqlFactory(StandardUserFactory, Identified):
 
         User._assert_valid_base_user_values(email, name, meals_per_week)
 
-        with session_maker() as session:
-            user_orm: StandardUserORM = StandardUserORM(
-                name=name,
-                email=email,
-                meals_per_week=meals_per_week,
-                address_id=address_id,
+        with engine.connect() as connection:
+            user_statement = (
+                insert(user_table)
+                .values(
+                    email=email,
+                    name=name,
+                    meals_per_week=meals_per_week,
+                    address_id=address_id,
+                    type="standard_user",
+                )
+                .returning(user_table.c.id)
             )
-            session.add(user_orm)
-            session.commit()
+            (user_id,) = connection.execute(user_statement).scalar_one()
+            standard_user_statement = insert(standard_user_table).values(
+                id=user_id,
+            )
+            connection.execute(standard_user_statement).scalar_one()
+
             standard_user = StandardUser(
-                user_orm.id,
-                user_orm.email,
-                user_orm.name,
-                user_orm.meals_per_week,
+                user_id,
+                email,
+                name,
+                meals_per_week,
                 address_id,
             )
 

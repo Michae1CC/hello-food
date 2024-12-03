@@ -1,43 +1,28 @@
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column
-from sqlalchemy.orm import relationship
-from ..sql import Base
-from ..address import AddressORM
+from sqlalchemy import Table, Column, Integer, String, Float, ForeignKey
 
+from ..sql import metadata
 
-class UserORM(Base):
-    __tablename__ = "User"
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    email: Mapped[str] = mapped_column(unique=True)
-    name: Mapped[str]
-    meals_per_week: Mapped[int]
-    address_id: Mapped[int] = mapped_column(ForeignKey("Address.id"))
-    address: Mapped[AddressORM] = relationship()
-    type: Mapped[str]
+user_table = Table(
+    "User",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("email", String, nullable=True, unique=True),
+    Column("name", String, nullable=True),
+    Column("meals_per_week", Integer, nullable=True),
+    Column("address_id", String, ForeignKey("Address.id"), nullable=True),
+    Column("type", String, nullable=True),
+)
 
-    __mapper_args__ = {
-        "polymorphic_abstract": True,
-        "polymorphic_identity": "user",
-        "polymorphic_on": "type",
-    }
+trial_user_table = Table(
+    "TrialUser",
+    metadata,
+    Column("id", Integer, ForeignKey("Address.id"), nullable=True),
+    Column("trial_end_date", Integer, nullable=True),
+    Column("discount_value", Float, nullable=True),
+)
 
-
-class TrialUserORM(UserORM):
-    __tablename__ = "TrialUser"
-    id: Mapped[int] = mapped_column(ForeignKey("User.id"), primary_key=True)
-    trial_end_date: Mapped[int]
-    discount_value: Mapped[float]
-
-    __mapper_args__ = {
-        "polymorphic_identity": "trail_user",
-    }
-
-
-class StandardUserORM(UserORM):
-    __tablename__ = "PaidUser"
-    id: Mapped[int] = mapped_column(ForeignKey("User.id"), primary_key=True)
-
-    __mapper_args__ = {
-        "polymorphic_identity": "paid_user",
-    }
+standard_user_table = Table(
+    "TrialUser",
+    metadata,
+    Column("id", Integer, ForeignKey("Address.id"), nullable=True),
+)

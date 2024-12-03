@@ -1,13 +1,13 @@
 from abc import ABC, abstractmethod
-from typing import override
+from typing import override, Any
 
 from sqlalchemy import select, Select
 
 from .model import User, TrialUser, StandardUser
-from .orm import TrialUserORM, StandardUserORM
+from .orm import user_table, trial_user_table, standard_user_table
 from ..address import Address
 from ..log import Identified
-from ..sql import session_maker
+from ..sql import engine
 
 
 class TrialUserRepository(ABC):
@@ -27,33 +27,6 @@ class TrialUserSqlRepository(TrialUserRepository, Identified):
     layer. See pg 88
     """
 
-    @classmethod
-    def _get_from_sqlalchemy_statement(
-        cls, statement: Select[tuple[TrialUserORM]]
-    ) -> TrialUser | None:
-        """
-        Gets a user from the persistent layer using the provided sqlalchemy
-        select statement.
-        """
-
-        with session_maker() as session:
-            user_orm: TrialUserORM | None = session.execute(
-                statement
-            ).scalar_one_or_none()
-            if user_orm is None:
-                return None
-            trial_user = TrialUser(
-                user_orm.id,
-                user_orm.email,
-                user_orm.name,
-                user_orm.meals_per_week,
-                user_orm.trial_end_date,
-                user_orm.discount_value,
-                user_orm.address_id,
-            )
-
-        return trial_user
-
     @override
     @classmethod
     def get_from_email(cls, email: str) -> TrialUser | None:
@@ -61,9 +34,29 @@ class TrialUserSqlRepository(TrialUserRepository, Identified):
         Gets a user from the persistent layer from the user's email.
         """
 
-        statement = select(TrialUserORM).where(TrialUserORM.email == email)
+        with engine.connect() as conn:
+            user_table_statement = select(user_table).where(user_table.c.email == email)
+            trial_user_table_statement = select(trial_user_table).where(
+                trial_user_table.c.email == email
+            )
 
-        return cls._get_from_sqlalchemy_statement(statement)
+            user_orm = conn.execute(user_table_statement).one_or_none()
+            trial_user_orm = conn.execute(trial_user_table_statement).one_or_none()
+
+            if user_orm is None or trial_user_orm is None:
+                return None
+
+            trial_user = TrialUser(
+                user_orm.id,
+                user_orm.email,
+                user_orm.name,
+                user_orm.meals_per_week,
+                trial_user_orm.trial_end_date,
+                trial_user_orm.discount_value,
+                trial_user_orm.address_id,
+            )
+
+        return trial_user
 
 
 class StandardUserRepository(ABC):
@@ -83,22 +76,27 @@ class StandardUserSqlRepository(StandardUserRepository, Identified):
     layer. See pg 88
     """
 
+    @override
     @classmethod
-    def _get_from_sqlalchemy_statement(
-        cls, statement: Select[tuple[StandardUserORM]]
-    ) -> StandardUser | None:
+    def get_from_email(cls, email: str) -> StandardUser | None:
         """
-        Gets a standard user from the persistent layer using the provided sqlalchemy
-        select statement.
+        Gets a user from the persistent layer from the user's email.
         """
 
-        with session_maker() as session:
-            user_orm: StandardUserORM | None = session.execute(
-                statement
-            ).scalar_one_or_none()
-            if user_orm is None:
+        with engine.connect() as conn:
+            user_table_statement = select(user_table).where(user_table.c.email == email)
+            standard_user_table_statement = select(trial_user_table).where(
+                trial_user_table.c.email == email
+            )
+
+            user_orm = conn.execute(user_table_statement).one_or_none()
+            standard_user_orm = conn.execute(
+                standard_user_table_statement
+            ).one_or_none()
+
+            if user_orm is None or standard_user_orm is None:
                 return None
-            address_orm = user_orm.address
+
             standard_user = StandardUser(
                 user_orm.id,
                 user_orm.email,
@@ -108,17 +106,6 @@ class StandardUserSqlRepository(StandardUserRepository, Identified):
             )
 
         return standard_user
-
-    @override
-    @classmethod
-    def get_from_email(cls, email: str) -> StandardUser | None:
-        """
-        Gets a user from the persistent layer from the user's email.
-        """
-
-        statement = select(StandardUserORM).where(StandardUserORM.email == email)
-
-        return cls._get_from_sqlalchemy_statement(statement)
 
 
 class UserRepository(ABC):

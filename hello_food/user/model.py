@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import override, Self
+from typing import override
 
-from .orm import TrialUserORM, StandardUserORM
 from ..util import get_current_unix_epoch
-from ..address import Address, get_address_factory
 
 
 class User(ABC):

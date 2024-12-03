@@ -4,8 +4,8 @@ from typing import override, Any, Mapping
 from sqlalchemy import select, Select
 
 from .model import Address
-from .orm import AddressORM
-from ..sql import session_maker
+from .orm import address_table
+from ..sql import engine
 
 
 class AddressRepository(ABC):
@@ -27,13 +27,11 @@ class AddressSqlRepository(AddressRepository):
 
     @classmethod
     def _get_from_sqlalchemy_statement(
-        cls, statement: Select[tuple[AddressORM]]
+        cls, statement: Select[tuple[Any]]
     ) -> Address | None:
 
-        with session_maker() as session:
-            address_orm: AddressORM | None = session.execute(
-                statement
-            ).scalar_one_or_none()
+        with engine.connect() as conn:
+            address_orm = conn.execute(statement).scalar_one_or_none()
             if address_orm is None:
                 return None
             address = Address(
@@ -53,6 +51,10 @@ class AddressSqlRepository(AddressRepository):
         Gets a user from the persistent layer from the user's email.
         """
 
-        statement = select(AddressORM).where(AddressORM.id == id_)
+        statement = select(address_table).where(address_table.c.id == id_)
 
         return cls._get_from_sqlalchemy_statement(statement)
+
+
+def get_address_repository() -> AddressRepository:
+    return AddressSqlRepository()

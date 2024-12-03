@@ -1,35 +1,39 @@
 from functools import singledispatch
 from typing import Any
 
-from sqlalchemy import delete, update, select
-from sqlalchemy.orm import Session
+from sqlalchemy import Connection, delete, update, select
 
-from .sql import session_maker
-from .address import Address, AddressORM
-from .user import User, UserORM, TrialUser, TrialUserORM, StandardUser
+from .sql import engine
+from .address import Address, address_table
+from .user import (
+    user_table,
+    trial_user_table,
+    User,
+    TrialUser,
+    StandardUser,
+)
 
 _PERSISTENT_ENTITIES = User | TrialUser | StandardUser | Address
 
 
 def update_sql_entities(*entities: _PERSISTENT_ENTITIES) -> None:
 
-    with session_maker() as session:
+    with engine.connect() as connection:
         for entity in entities:
-            _prepare_entity_for_update(entity, session)
-        session.commit()
+            _prepare_entity_for_update(entity, connection)
 
 
 @singledispatch
-def _prepare_entity_for_update(entity: Any, session: Session) -> None:
+def _prepare_entity_for_update(entity: Any, connection: Connection) -> None:
     raise ValueError(f"No update register for {type(entity).__name__}")
 
 
 @_prepare_entity_for_update.register
-def _(entity: AddressORM, session: Session) -> None:
+def _(entity: Address, connection: Connection) -> None:
 
     update_base_statement = (
-        update(AddressORM)
-        .where(AddressORM.id == entity.id)
+        update(address_table)
+        .where(address_table.c.id == entity.id)
         .values(
             unit=entity.unit,
             street_name=entity.street_name,
@@ -37,18 +41,15 @@ def _(entity: AddressORM, session: Session) -> None:
             postcode=entity.postcode,
         )
     )
-    session.execute(update_base_statement)
+    connection.execute(update_base_statement)
 
 
 @_prepare_entity_for_update.register
-def _(entity: TrialUser, session: Session) -> None:
-
-    # A single joined table update is not supported
-    # https://github.com/sqlalchemy/sqlalchemy/discussions/10128
+def _(entity: TrialUser, connection: Connection) -> None:
 
     update_base_statement = (
-        update(UserORM)
-        .where(UserORM.id == entity.id)
+        update(user_table)
+        .where(user_table.c.id == entity.id)
         .values(
             email=entity.email,
             name=entity.name,
@@ -56,25 +57,25 @@ def _(entity: TrialUser, session: Session) -> None:
             address_id=entity.address_id,
         )
     )
-    session.execute(update_base_statement)
+    connection.execute(update_base_statement)
 
     update_child_statement = (
-        update(TrialUserORM)
-        .where(TrialUserORM.id == entity.id)
+        update(trial_user_table)
+        .where(trial_user_table.c.id == entity.id)
         .values(
             trial_end_date=entity.trial_end_date,
             discount_value=entity.discount_value,
         )
     )
-    session.execute(update_child_statement)
+    connection.execute(update_child_statement)
 
 
 @_prepare_entity_for_update.register
-def _(entity: StandardUser, session: Session) -> None:
+def _(entity: StandardUser, connection: Connection) -> None:
 
     update_base_statement = (
-        update(UserORM)
-        .where(UserORM.id == entity.id)
+        update(user_table)
+        .where(user_table.c.id == entity.id)
         .values(
             email=entity.email,
             name=entity.name,
@@ -82,4 +83,4 @@ def _(entity: StandardUser, session: Session) -> None:
             address_id=entity.address_id,
         )
     )
-    session.execute(update_base_statement)
+    connection.execute(update_base_statement)
