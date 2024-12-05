@@ -30,3 +30,8 @@ Before commiting run `pre-commit install`.
 
 * <https://www.visual-paradigm.com/guide/uml-unified-modeling-language/uml-class-diagram-tutorial/>
 * <https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/adding-self-hosted-runners>
+
+## Testing
+
+* <https://github.com/Polymathian/tropofy_framework/blob/master/tropofy/tests/test_data_set.py>
+* <https://github.com/asottile/pyupgrade/blob/main/tests/features/six_test.py>
