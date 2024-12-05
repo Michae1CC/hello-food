@@ -41,7 +41,7 @@ class AddressSqlFactory(AddressFactory):
         Create a new address using the provided parameters.
         """
 
-        Address._assert_is_valid_postcode(postcode)
+        Address.assert_is_valid_postcode(postcode)
 
         with engine.connect() as conn:
             statement = (

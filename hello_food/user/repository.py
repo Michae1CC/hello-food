@@ -4,8 +4,7 @@ from typing import override, Any
 from sqlalchemy import select, Select
 
 from .model import User, TrialUser, StandardUser
-from .orm import user_table, trial_user_table, standard_user_table
-from ..address import Address
+from .orm import user_table, trial_user_table
 from ..log import Identified
 from ..sql import engine
 

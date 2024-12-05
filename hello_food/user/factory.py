@@ -72,9 +72,9 @@ class TrialUserSqlFactory(TrialUserFactory, Identified):
         is often best. pg 103
         """
 
-        User._assert_valid_base_user_values(email, name, meals_per_week)
-        TrialUser._assert_trial_end_date_is_unix_time_epoch(trial_end_date)
-        TrialUser._assert_discount_is_decimal_value(discount_value)
+        User.assert_valid_base_user_values(email, name, meals_per_week)
+        TrialUser.assert_trial_end_date_is_unix_time_epoch(trial_end_date)
+        TrialUser.assert_discount_is_decimal_value(discount_value)
 
         with engine.connect() as connection:
             user_statement = (
@@ -170,7 +170,7 @@ class StandardUserSqlFactory(StandardUserFactory, Identified):
         address_id: int,
     ) -> StandardUser:
 
-        User._assert_valid_base_user_values(email, name, meals_per_week)
+        User.assert_valid_base_user_values(email, name, meals_per_week)
 
         with engine.connect() as connection:
             user_statement = (

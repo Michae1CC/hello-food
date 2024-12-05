@@ -11,7 +11,7 @@ class Address:
         self.postcode: int = postcode
 
     @classmethod
-    def _assert_is_valid_postcode(cls, postcode: int) -> None:
+    def assert_is_valid_postcode(cls, postcode: int) -> None:
         assert 0 < postcode < 10_000 and f"Invalid postcode of {postcode} provided"
 
     def __str__(self) -> str:
