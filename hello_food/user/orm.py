@@ -22,7 +22,7 @@ trial_user_table = Table(
 )
 
 standard_user_table = Table(
-    "TrialUser",
+    "StandardUser",
     metadata,
     Column("id", Integer, ForeignKey("Address.id"), nullable=True),
 )
