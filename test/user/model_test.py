@@ -1,6 +1,9 @@
-import pytest
+import time
 
-from hello_food import User, TrialUser
+import pytest
+from mock import patch
+
+from hello_food import User, TrialUser, StandardUser
 
 
 class TestUser:
@@ -34,13 +37,74 @@ class TestUser:
 class TestTrialUser:
     __test__ = True
 
-    @pytest.mark.parametrize("trail_end_date", (0.000001, 0.5, 1.0))
-    def assert_discount_is_decimal_value_passes(cls, discount: float) -> None:
+    @pytest.fixture
+    def default_user_discount_value(self) -> float:
+        return 0.2
+
+    @pytest.fixture
+    def default_user_trial_end_date(self) -> int:
+        return 123456
+
+    @pytest.fixture
+    def default_user(
+        self, default_user_discount_value: float, default_user_trial_end_date: int
+    ) -> TrialUser:
+        return TrialUser(
+            0,
+            "markerplier@example.com",
+            "mark",
+            2,
+            default_user_trial_end_date,
+            default_user_discount_value,
+            0,
+        )
+
+    @pytest.mark.parametrize("discount", (0.000001, 0.5, 0.99))
+    def test_assert_discount_is_decimal_value_passes(cls, discount: float) -> None:
         TrialUser.assert_discount_is_decimal_value(discount)
 
-    @pytest.mark.parametrize("trail_end_date", (-1, -0.0001, 0, 1.01, 2.0))
-    def assert_discount_is_decimal_value_throws_assertion_error(
+    @pytest.mark.parametrize("discount", (-1, -0.0001, 0, 1.0, 1.01, 2.0))
+    def test_assert_discount_is_decimal_value_throws_assertion_error(
         cls, discount: float
     ) -> None:
         with pytest.raises(AssertionError):
             TrialUser.assert_discount_is_decimal_value(discount)
+
+    def test_get_user_discount_as_decimal(
+        self, default_user_discount_value: float, default_user: TrialUser
+    ) -> None:
+        assert (
+            default_user.get_user_discount_as_decimal() == default_user_discount_value
+        )
+
+    @pytest.mark.parametrize(
+        ("current_time", "locked_out"),
+        ((123455, False), (123456, True), (123457, True)),
+    )
+    def test_is_locked_from_due_payment(
+        self, current_time: int, locked_out: bool, default_user: TrialUser
+    ) -> None:
+        with patch("time.time") as time_mock:
+            time_mock.return_value = current_time
+            assert default_user.is_locked_from_due_payment() is locked_out
+
+
+class TestStandardUser:
+
+    @pytest.fixture
+    def default_user(
+        self,
+    ) -> StandardUser:
+        return StandardUser(
+            0,
+            "markerplier@example.com",
+            "mark",
+            3,
+            0,
+        )
+
+    def test_get_user_discount_as_decimal(self, default_user: StandardUser) -> None:
+        assert default_user.get_user_discount_as_decimal() == 0.0
+
+    def test_is_locked_from_due_payment(self, default_user: StandardUser) -> None:
+        assert default_user.is_locked_from_due_payment() is False

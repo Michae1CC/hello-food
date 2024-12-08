@@ -77,7 +77,7 @@ class TrialUser(User):
 
     @override
     def is_locked_from_due_payment(self) -> bool:
-        return self.trial_end_date < get_current_unix_epoch()
+        return self.trial_end_date <= get_current_unix_epoch()
 
 
 class StandardUser(User):
