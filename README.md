@@ -35,3 +35,5 @@ Before commiting run `pre-commit install`.
 
 * <https://github.com/Polymathian/tropofy_framework/blob/master/tropofy/tests/test_data_set.py>
 * <https://github.com/asottile/pyupgrade/blob/main/tests/features/six_test.py>
+* <https://github.com/asottile/pyupgrade/blob/main/tests/features/six_test.py>
+* <https://docs.sqlalchemy.org/en/20/core/metadata.html#schema-table-schema-name>

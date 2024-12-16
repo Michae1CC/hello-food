@@ -9,14 +9,14 @@ user_table = Table(
     Column("email", String, nullable=True, unique=True),
     Column("name", String, nullable=True),
     Column("meals_per_week", Integer, nullable=True),
-    Column("address_id", String, ForeignKey("Address.id"), nullable=True),
+    Column("address_id", Integer, ForeignKey("Address.id"), nullable=True),
     Column("type", String, nullable=True),
 )
 
 trial_user_table = Table(
     "TrialUser",
     metadata,
-    Column("id", Integer, ForeignKey("Address.id"), nullable=True),
+    Column("id", Integer, ForeignKey("User.id"), primary_key=True, nullable=True),
     Column("trial_end_date", Integer, nullable=True),
     Column("discount_value", Float, nullable=True),
 )
@@ -24,5 +24,5 @@ trial_user_table = Table(
 standard_user_table = Table(
     "StandardUser",
     metadata,
-    Column("id", Integer, ForeignKey("Address.id"), nullable=True),
+    Column("id", Integer, ForeignKey("User.id"), primary_key=True, nullable=True),
 )

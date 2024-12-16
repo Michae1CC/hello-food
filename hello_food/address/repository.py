@@ -31,7 +31,7 @@ class AddressSqlRepository(AddressRepository):
     ) -> Address | None:
 
         with engine.connect() as conn:
-            address_orm = conn.execute(statement).scalar_one_or_none()
+            address_orm = conn.execute(statement).one_or_none()
             if address_orm is None:
                 return None
             address = Address(

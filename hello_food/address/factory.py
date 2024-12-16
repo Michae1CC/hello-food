@@ -43,7 +43,7 @@ class AddressSqlFactory(AddressFactory):
 
         Address.assert_is_valid_postcode(postcode)
 
-        with engine.connect() as conn:
+        with engine.connect() as connection:
             statement = (
                 insert(address_table)
                 .values(
@@ -54,7 +54,8 @@ class AddressSqlFactory(AddressFactory):
                 )
                 .returning(address_table.c.id)
             )
-            (address_id,) = conn.execute(statement).scalar_one()
+            address_id = connection.execute(statement).scalar_one()
+            connection.commit()
             address = Address(address_id, unit, street_name, suburb, postcode)
 
         return address

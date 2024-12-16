@@ -8,3 +8,5 @@ from .address import get_address_factory, get_address_repository
 
 
 app = Flask(__name__)
+
+# metadata.create_all(engine)

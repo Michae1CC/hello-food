@@ -88,13 +88,14 @@ class TrialUserSqlFactory(TrialUserFactory, Identified):
                 )
                 .returning(user_table.c.id)
             )
-            (user_id,) = connection.execute(user_statement).scalar_one()
+            user_id = connection.execute(user_statement).scalar_one()
             trial_user_statement = insert(trial_user_table).values(
                 id=user_id,
                 trial_end_date=trial_end_date,
                 discount_value=discount_value,
             )
-            connection.execute(trial_user_statement).scalar_one()
+            connection.execute(trial_user_statement)
+            connection.commit()
 
             trial_user = TrialUser(
                 user_id,
@@ -184,11 +185,12 @@ class StandardUserSqlFactory(StandardUserFactory, Identified):
                 )
                 .returning(user_table.c.id)
             )
-            (user_id,) = connection.execute(user_statement).scalar_one()
+            user_id = connection.execute(user_statement).scalar_one()
             standard_user_statement = insert(standard_user_table).values(
                 id=user_id,
             )
-            connection.execute(standard_user_statement).scalar_one()
+            connection.execute(standard_user_statement)
+            connection.commit()
 
             standard_user = StandardUser(
                 user_id,

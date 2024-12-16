@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import override, Any
 
-from sqlalchemy import select, Select
+from sqlalchemy import select
 
 from .model import User, TrialUser, StandardUser
-from .orm import user_table, trial_user_table
+from .orm import user_table, trial_user_table, standard_user_table
 from ..log import Identified
 from ..sql import engine
 
@@ -35,14 +35,17 @@ class TrialUserSqlRepository(TrialUserRepository, Identified):
 
         with engine.connect() as conn:
             user_table_statement = select(user_table).where(user_table.c.email == email)
-            trial_user_table_statement = select(trial_user_table).where(
-                trial_user_table.c.email == email
-            )
-
             user_orm = conn.execute(user_table_statement).one_or_none()
+
+            if user_orm is None:
+                return None
+
+            trial_user_table_statement = select(trial_user_table).where(
+                trial_user_table.c.id == user_orm.id
+            )
             trial_user_orm = conn.execute(trial_user_table_statement).one_or_none()
 
-            if user_orm is None or trial_user_orm is None:
+            if trial_user_orm is None:
                 return None
 
             trial_user = TrialUser(
@@ -52,7 +55,7 @@ class TrialUserSqlRepository(TrialUserRepository, Identified):
                 user_orm.meals_per_week,
                 trial_user_orm.trial_end_date,
                 trial_user_orm.discount_value,
-                trial_user_orm.address_id,
+                user_orm.address_id,
             )
 
         return trial_user
@@ -84,16 +87,19 @@ class StandardUserSqlRepository(StandardUserRepository, Identified):
 
         with engine.connect() as conn:
             user_table_statement = select(user_table).where(user_table.c.email == email)
-            standard_user_table_statement = select(trial_user_table).where(
-                trial_user_table.c.email == email
-            )
-
             user_orm = conn.execute(user_table_statement).one_or_none()
+
+            if user_orm is None:
+                return None
+
+            standard_user_table_statement = select(standard_user_table).where(
+                standard_user_table.c.id == user_orm.id
+            )
             standard_user_orm = conn.execute(
                 standard_user_table_statement
             ).one_or_none()
 
-            if user_orm is None or standard_user_orm is None:
+            if standard_user_orm is None:
                 return None
 
             standard_user = StandardUser(
