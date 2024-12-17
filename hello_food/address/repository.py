@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import override, Any, Mapping
+from typing import override, Any
 
 from sqlalchemy import select, Select
 
@@ -48,7 +48,7 @@ class AddressSqlRepository(AddressRepository):
     @classmethod
     def get_from_id(cls, id_: int) -> Address | None:
         """
-        Gets a user from the persistent layer from the user's email.
+        Gets a address from the persistent layer from the address's id.
         """
 
         statement = select(address_table).where(address_table.c.id == id_)
