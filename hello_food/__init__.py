@@ -12,4 +12,5 @@ from .user import (
     get_trial_user_repository,
     get_user_repository,
 )
+from .meal import meal_table, Meal, get_meal_factory, get_meal_repository
 from .sql import metadata, engine

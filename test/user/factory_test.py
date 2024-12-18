@@ -9,7 +9,6 @@ from hello_food import (
     metadata,
     address_table,
     trial_user_table,
-    standard_user_table,
     user_table,
     get_trial_user_factory,
     get_standard_user_factory,

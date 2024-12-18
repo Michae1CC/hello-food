@@ -27,8 +27,8 @@ class MealFactory(JsonFactory[Meal], ABC):
 
 class MealSqlFactory(MealFactory):
 
+    @override
     @classmethod
-    @abstractmethod
     def create_from_values(
         self,
         cuisine: str,
@@ -60,3 +60,7 @@ class MealSqlFactory(MealFactory):
         price = cls._parse_int_from_json(json_as_dict, "price")
 
         return cls.create_from_values(cuisine, recipe, price)
+
+
+def get_meal_factory() -> MealFactory:
+    return MealSqlFactory()
