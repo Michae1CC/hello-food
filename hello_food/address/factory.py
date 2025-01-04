@@ -56,9 +56,8 @@ class AddressSqlFactory(AddressFactory):
             )
             address_id = connection.execute(statement).scalar_one()
             connection.commit()
-            address = Address(address_id, unit, street_name, suburb, postcode)
 
-        return address
+        return Address(address_id, unit, street_name, suburb, postcode)
 
     @override
     @classmethod

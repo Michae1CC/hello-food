@@ -22,6 +22,10 @@ class MealRepository(ABC):
         """
         ...
 
+    @classmethod
+    @abstractmethod
+    def get_from_ids(cls, ids: list[int]) -> list[Meal]: ...
+
 
 class MealSqlRepository(MealRepository):
 
@@ -53,6 +57,29 @@ class MealSqlRepository(MealRepository):
         statement = select(meal_table).where(meal_table.c.id == id_)
 
         return cls._get_from_sqlalchemy_statement(statement)
+
+    @override
+    @classmethod
+    def get_from_ids(cls, ids: list[int]) -> list[Meal]:
+        """
+        Gets a meal from the persistent layer from the user's email.
+        """
+
+        meals: list[Meal] = []
+        statement = select(meal_table).where(meal_table.c.id.in_(ids))
+
+        with engine.connect() as conn:
+            meals_orm = conn.execute(statement).all()
+            for meal_orm in meals_orm:
+                meal = Meal(
+                    id=meal_orm.id,
+                    cuisine=meal_orm.cuisine,
+                    recipe=meal_orm.recipe,
+                    price=meal_orm.price,
+                )
+                meals.append(meal)
+
+        return meals
 
 
 def get_meal_repository() -> MealRepository:
