@@ -18,7 +18,6 @@ class DeliveryFactory(JsonFactory[Delivery], ABC):
         self,
         user_id: int,
         address_id: int,
-        delivery_time: int,
         meal_orders: list[tuple[int, int]],
     ) -> Delivery: ...
 
@@ -31,7 +30,6 @@ class DeliverySqlFactory(DeliveryFactory):
         self,
         user_id: int,
         address_id: int,
-        delivery_time: int,
         meal_order_tuples: list[tuple[int, int]],
     ) -> Delivery:
 
@@ -41,8 +39,6 @@ class DeliverySqlFactory(DeliveryFactory):
 
         for _, quantity in meal_order_tuples:
             MealOrder.assert_quantity_is_positive_integer(quantity)
-
-        Delivery.assert_delivery_date_is_unix_time_epoch(delivery_time)
 
         meal_ids = [meal_id for (meal_id, _) in meal_order_tuples]
         meal_repository = get_meal_repository()
@@ -56,7 +52,6 @@ class DeliverySqlFactory(DeliveryFactory):
                 .values(
                     user_id=user_id,
                     address_id=address_id,
-                    delivery_time=delivery_time,
                     total=delivery_total,
                 )
                 .returning(delivery_table.c.id)
@@ -71,9 +66,7 @@ class DeliverySqlFactory(DeliveryFactory):
                 connection.execute(meal_order_statement)
             connection.commit()
 
-        return Delivery(
-            delivery_id, user_id, address_id, delivery_total, delivery_time, meal_orders
-        )
+        return Delivery(delivery_id, user_id, address_id, delivery_total, meal_orders)
 
     @override
     @classmethod
@@ -92,11 +85,8 @@ class DeliverySqlFactory(DeliveryFactory):
 
         user_id = cls._parse_int_from_json(json_as_dict, "user_id")
         address_id = cls._parse_int_from_json(json_as_dict, "address_id")
-        delivery_time = cls._parse_int_from_json(json_as_dict, "delivery_time")
 
-        return cls.create_from_values(
-            user_id, address_id, delivery_time, meal_order_tuples
-        )
+        return cls.create_from_values(user_id, address_id, meal_order_tuples)
 
 
 def get_delivery_factory() -> DeliveryFactory:

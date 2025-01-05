@@ -78,7 +78,6 @@ class TestAddressFactory:
         )
 
         # Create a delivery
-        assigned_delivery_time = 123456
         assigned_meal_order_tuples = [
             (created_meal_1["id"], 1),
             (created_meal_2["id"], 3),
@@ -98,7 +97,6 @@ class TestAddressFactory:
                 .values(
                     user_id=created_standard_user.id,
                     address_id=created_address.id,
-                    delivery_time=assigned_delivery_time,
                     total=delivery_total,
                 )
                 .returning(delivery_table.c.id)
@@ -118,5 +116,4 @@ class TestAddressFactory:
         assert retrieved_delivery is not None
         assert retrieved_delivery.user_id == created_standard_user.id
         assert retrieved_delivery.address_id == created_address.id
-        assert retrieved_delivery.delivery_time == assigned_delivery_time
         assert set(retrieved_delivery.meal_orders) == set(meal_orders)

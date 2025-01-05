@@ -75,7 +75,6 @@ class TestAddressFactory:
         )
 
         # Create a delivery
-        assigned_delivery_time = 123456
         assigned_meal_order_tuples = [
             (created_meal_1["id"], 1),
             (created_meal_2["id"], 3),
@@ -84,13 +83,11 @@ class TestAddressFactory:
         created_delivery = delivery_factory.create_from_values(
             created_standard_user.id,
             created_address.id,
-            assigned_delivery_time,
             assigned_meal_order_tuples,
         )
 
         assert created_delivery.user_id == created_standard_user.id
         assert created_delivery.address_id == created_address.id
-        assert created_delivery.delivery_time == assigned_delivery_time
 
         delivery_statement = select(delivery_table).where(
             delivery_table.c.id == created_delivery.id
@@ -105,7 +102,6 @@ class TestAddressFactory:
 
         assert delivery_orm.user_id == created_standard_user.id
         assert delivery_orm.address_id == created_address.id
-        assert delivery_orm.delivery_time == assigned_delivery_time
         assert set(
             (meal_order_orm.meal_id, meal_order_orm.quantity)
             for meal_order_orm in meal_orders_orm
@@ -157,14 +153,12 @@ class TestAddressFactory:
         )
 
         # Create a delivery
-        assigned_delivery_time = 123456
         assigned_meal_order_1_quantity = 1
         assigned_meal_order_2_quantity = 3
 
         delivery_json: Mapping[str, Any] = {
             "user_id": created_standard_user.id,
             "address_id": created_address.id,
-            "delivery_time": assigned_delivery_time,
             "meal_orders": [
                 {
                     "meal_id": created_meal_1["id"],
@@ -181,7 +175,6 @@ class TestAddressFactory:
 
         assert created_delivery.user_id == created_standard_user.id
         assert created_delivery.address_id == created_address.id
-        assert created_delivery.delivery_time == assigned_delivery_time
 
         delivery_statement = select(delivery_table).where(
             delivery_table.c.id == created_delivery.id
@@ -196,7 +189,6 @@ class TestAddressFactory:
 
         assert delivery_orm.user_id == created_standard_user.id
         assert delivery_orm.address_id == created_address.id
-        assert delivery_orm.delivery_time == assigned_delivery_time
         assert set(
             (meal_order_orm.meal_id, meal_order_orm.quantity)
             for meal_order_orm in meal_orders_orm

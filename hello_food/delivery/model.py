@@ -20,7 +20,6 @@ class Delivery:
         user_id: int,
         address_id: int,
         total: float,
-        delivery_time: int,
         meal_orders: list[MealOrder],
     ) -> None:
         super().__init__()
@@ -28,12 +27,7 @@ class Delivery:
         self.user_id: int = user_id
         self.address_id: int = address_id
         self.total: float = total
-        self.delivery_time: int = delivery_time
         self.meal_orders: list[MealOrder] = meal_orders
-
-    @classmethod
-    def assert_delivery_date_is_unix_time_epoch(cls, delivery_time: int) -> None:
-        assert delivery_time >= 0 and "Must be a valid Unix time epoch"
 
     @classmethod
     def compute_total(cls, meal_orders: list[MealOrder], meals: list[Meal]) -> float:

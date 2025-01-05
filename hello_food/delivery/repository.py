@@ -43,7 +43,6 @@ class DeliverySqlRepository(DeliveryRepository):
             delivery_orm.user_id,
             delivery_orm.address_id,
             delivery_orm.total,
-            delivery_orm.delivery_time,
             meal_orders,
         )
 
