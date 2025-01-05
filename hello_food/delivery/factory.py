@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import override, Any, Mapping
 
-from sqlalchemy import insert, select
+from sqlalchemy import insert
 
 from .orm import delivery_table, meal_order_table
 from .model import Delivery, MealOrder
@@ -15,7 +15,11 @@ class DeliveryFactory(JsonFactory[Delivery], ABC):
     @classmethod
     @abstractmethod
     def create_from_values(
-        self, delivery_time: int, meal_orders: list[tuple[int, float]]
+        self,
+        user_id: int,
+        address_id: int,
+        delivery_time: int,
+        meal_orders: list[tuple[int, int]],
     ) -> Delivery: ...
 
 
@@ -24,7 +28,11 @@ class DeliverySqlFactory(DeliveryFactory):
     @override
     @classmethod
     def create_from_values(
-        self, delivery_time: int, meal_order_tuples: list[tuple[int, float]]
+        self,
+        user_id: int,
+        address_id: int,
+        delivery_time: int,
+        meal_order_tuples: list[tuple[int, int]],
     ) -> Delivery:
 
         meal_orders: list[MealOrder] = [
@@ -46,6 +54,8 @@ class DeliverySqlFactory(DeliveryFactory):
             delivery_statement = (
                 insert(delivery_table)
                 .values(
+                    user_id=user_id,
+                    address_id=address_id,
                     delivery_time=delivery_time,
                     total=delivery_total,
                 )
@@ -61,7 +71,9 @@ class DeliverySqlFactory(DeliveryFactory):
                 connection.execute(meal_order_statement)
             connection.commit()
 
-        return Delivery(delivery_id, delivery_total, delivery_time, meal_orders)
+        return Delivery(
+            delivery_id, user_id, address_id, delivery_total, delivery_time, meal_orders
+        )
 
     @override
     @classmethod
@@ -71,13 +83,21 @@ class DeliverySqlFactory(DeliveryFactory):
         assert meal_orders_as_json is not None
         assert isinstance(meal_orders_as_json, list)
 
-        meal_order_tuples: list[tuple[int, float]] = []
+        meal_order_tuples: list[tuple[int, int]] = []
         for item in meal_orders_as_json:
             assert isinstance(item, dict)
             meal_id = cls._parse_int_from_json(item, "meal_id")
             quantity = cls._parse_int_from_json(item, "quantity")
             meal_order_tuples.append((meal_id, quantity))
 
+        user_id = cls._parse_int_from_json(json_as_dict, "user_id")
+        address_id = cls._parse_int_from_json(json_as_dict, "address_id")
         delivery_time = cls._parse_int_from_json(json_as_dict, "delivery_time")
 
-        return cls.create_from_values(delivery_time, meal_order_tuples)
+        return cls.create_from_values(
+            user_id, address_id, delivery_time, meal_order_tuples
+        )
+
+
+def get_delivery_factory() -> DeliveryFactory:
+    return DeliverySqlFactory()

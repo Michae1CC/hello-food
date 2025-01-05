@@ -4,7 +4,7 @@ import pytest
 
 from sqlalchemy import Engine, insert
 
-from hello_food import engine, metadata, meal_table, Meal, get_meal_repository
+from hello_food import engine, metadata, meal_table, get_meal_repository
 
 
 class TestTrialUserFactory:

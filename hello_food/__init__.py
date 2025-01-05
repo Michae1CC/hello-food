@@ -1,4 +1,12 @@
 from .address import Address, get_address_factory, get_address_repository, address_table
+from .delivery import (
+    Delivery,
+    MealOrder,
+    get_delivery_factory,
+    get_delivery_repository,
+    delivery_table,
+    meal_order_table,
+)
 from .user import (
     user_table,
     standard_user_table,

@@ -1,6 +1,6 @@
 from typing import Generator
 
-from sqlalchemy import select, insert, Engine
+from sqlalchemy import select, Engine
 
 import pytest
 
