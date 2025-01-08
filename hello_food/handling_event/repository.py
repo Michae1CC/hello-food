@@ -29,11 +29,11 @@ class HandlingEventSqlRepository(HandlingEventRepository):
                 return None
 
         return HandlingEvent(
-            handling_event_orm.c.id,
-            handling_event_orm.c.delivery_id,
-            handling_event_orm.c.to_address_id,
-            handling_event_orm.c.from_address_id,
-            handling_event_orm.c.completion_time,
+            handling_event_orm.id,
+            handling_event_orm.delivery_id,
+            handling_event_orm.to_address_id,
+            handling_event_orm.from_address_id,
+            handling_event_orm.completion_time,
         )
 
 

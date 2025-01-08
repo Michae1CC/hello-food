@@ -1,4 +1,10 @@
 from .address import Address, get_address_factory, get_address_repository, address_table
+from .handling_event import (
+    HandlingEvent,
+    get_handling_event_factory,
+    get_handling_event_repository,
+    handling_event_table,
+)
 from .delivery import (
     Delivery,
     MealOrder,
