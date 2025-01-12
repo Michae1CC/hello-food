@@ -27,5 +27,4 @@ delivery_table = Table(
     Column("user_id", Integer, ForeignKey("User.id"), nullable=False),
     Column("address_id", Integer, ForeignKey("Address.id"), nullable=False),
     Column("total", Float, nullable=False),
-    Column("delivery_time", Integer, nullable=True),
 )

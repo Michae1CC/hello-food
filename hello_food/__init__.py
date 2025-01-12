@@ -28,3 +28,4 @@ from .user import (
 )
 from .meal import meal_table, Meal, get_meal_factory, get_meal_repository
 from .sql import metadata, engine
+from .util import *

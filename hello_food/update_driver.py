@@ -5,6 +5,7 @@ from sqlalchemy import Connection, delete, update, select
 
 from .sql import engine
 from .address import Address, address_table
+from .delivery import Delivery, delivery_table
 from .user import (
     user_table,
     trial_user_table,
@@ -13,7 +14,7 @@ from .user import (
     StandardUser,
 )
 
-_PERSISTENT_ENTITIES = User | TrialUser | StandardUser | Address
+_PERSISTENT_ENTITIES = User | TrialUser | StandardUser | Address | Delivery
 
 
 def update_sql_entities(*entities: _PERSISTENT_ENTITIES) -> None:
@@ -42,6 +43,21 @@ def _(entity: Address, connection: Connection) -> None:
         )
     )
     connection.execute(update_base_statement)
+
+
+@_prepare_entity_for_update.register
+def _(entity: Delivery, connection: Connection) -> None:
+
+    update_statement = (
+        update(delivery_table)
+        .where(delivery_table.c.id == entity.id)
+        .values(
+            user_id=entity.user_id,
+            address_id=entity.address_id,
+            total=entity.total,
+        )
+    )
+    connection.execute(update_statement)
 
 
 @_prepare_entity_for_update.register
