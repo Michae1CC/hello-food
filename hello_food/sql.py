@@ -31,7 +31,10 @@ engine: Engine = get_sa_engine()
 
 def get_sa_metadata() -> MetaData:
 
-    if PYTEST_VERSION:
+    if CI:
+        return MetaData()
+
+    elif PYTEST_VERSION:
         return MetaData(schema="test")
 
     return MetaData()
