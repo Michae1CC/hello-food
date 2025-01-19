@@ -8,7 +8,11 @@ from typing import cast, Mapping, Callable, Literal, Any
 from flask import request, Flask, Response, make_response
 
 from .sql import engine, metadata
-from .controllers.user import create_new_standard_user
+from .controllers.address import create_new_address
+from .controllers.delivery import create_new_delivery, update_delivery_address
+from .controllers.handling_event import create_new_handling_event
+from .controllers.meal import create_new_meal
+from .controllers.user import create_new_standard_user, create_new_trial_user
 
 dictConfig(
     {
@@ -96,7 +100,8 @@ def create_app() -> Flask:
         api_handler: Callable[[Mapping[str, Any]], Response | dict[str, Any] | None],
     ) -> None:
         @flask_app.route(resource, methods=methods)
-        def decorated() -> Response:
+        @wraps(api_handler)
+        def decorator() -> Response:
 
             try:
                 request_data = cast(Mapping[str, Any], request.json)
@@ -125,6 +130,17 @@ def create_app() -> Flask:
 
             return transform_handler_response(handler_response)
 
-    attach_api(["POST"], "/standard-user/create", create_new_standard_user)
+    # curl -i -X POST --header "Content-type: application/json" -d '{"unit":"U 19","street_name":"Green","suburb":"Morningside","postcode":"4171"}' http://127.0.0.1:5000/address/create
+    attach_api(["POST"], "/address/create", create_new_address)
+
+    attach_api(["POST"], "/delivery/create", create_new_delivery)
+    attach_api(["POST"], "/delivery/update_address", update_delivery_address)
+
+    attach_api(["POST"], "/handling_event/create", create_new_handling_event)
+
+    attach_api(["POST"], "/meal/create", create_new_meal)
+
+    attach_api(["POST"], "/standard_user/create", create_new_standard_user)
+    attach_api(["POST"], "/trial_user/create", create_new_trial_user)
 
     return flask_app
