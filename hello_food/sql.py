@@ -14,6 +14,9 @@ from .environ import CI, PYTEST_VERSION, PROD
 def get_sa_engine() -> Engine:
 
     if CI:
+        print("#################")
+        print("CI")
+        print(CI)
         return create_engine(
             "postgresql://webapp:webapp@localhost:5432/webapp", echo=True
         )
