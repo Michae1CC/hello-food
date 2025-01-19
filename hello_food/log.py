@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import logging.config
 import sys
 from typing import Optional
 from typing import TypeVar
@@ -11,6 +12,27 @@ LOGGING_LEVELS = (
 )
 
 _IT = TypeVar("_IT", bound="Identified")
+
+logging.config.dictConfig(
+    {
+        "version": 1,
+        "formatters": {
+            "default": {
+                "format": "[%(asctime)s] %(levelname)s in %(module)s: %(message)s",
+            }
+        },
+        "handlers": {
+            "wsgi": {
+                "class": "logging.StreamHandler",
+                "stream": "ext://flask.logging.wsgi_errors_stream",
+                "formatter": "default",
+            }
+        },
+        "loggers": {
+            "app": {"level": "INFO", "handlers": ["wsgi"], "propagate": True},
+        },
+    }
+)
 
 # set initial level to WARN.  This so that
 # log statements don't occur in the absence of explicit

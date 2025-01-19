@@ -1,5 +1,7 @@
-from sqlalchemy import create_engine, MetaData
+from sqlalchemy import create_engine, Engine, MetaData
 from sqlalchemy.pool import StaticPool
+
+from .environ import CI, PYTEST_VERSION, PROD
 
 # engine = create_engine(
 #     "sqlite+pysqlite:///:memory:",
@@ -8,8 +10,23 @@ from sqlalchemy.pool import StaticPool
 #     poolclass=StaticPool,
 # )
 
-engine = create_engine(
-    "postgresql://webapp:webapp@randi1-5.local:5432/webapp", echo=True
-)
 
-metadata = MetaData(schema="test")
+def get_sa_engine() -> Engine:
+
+    return create_engine(
+        "postgresql://webapp:webapp@randi1-5.local:5432/webapp", echo=True
+    )
+
+
+engine: Engine = get_sa_engine()
+
+
+def get_sa_metadata() -> MetaData:
+
+    if PYTEST_VERSION:
+        return MetaData(schema="test")
+
+    return MetaData()
+
+
+metadata: MetaData = get_sa_metadata()

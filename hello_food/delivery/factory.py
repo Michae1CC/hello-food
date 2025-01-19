@@ -6,6 +6,7 @@ from sqlalchemy import insert
 from .orm import delivery_table, meal_order_table
 from .model import Delivery, MealOrder
 from ..meal import get_meal_repository
+from ..user import get_user_repository
 from ..mixins import JsonFactory
 from ..sql import engine
 
@@ -32,6 +33,16 @@ class DeliverySqlFactory(DeliveryFactory):
         address_id: int,
         meal_order_tuples: list[tuple[int, int]],
     ) -> Delivery:
+
+        user_repository = get_user_repository()
+        delivery_user = user_repository.get_from_id(user_id)
+        assert delivery_user is not None and "Invalid user id given for delivery"
+
+        assert (
+            delivery_user.meals_per_week
+            == sum(meal_tuple[1] for meal_tuple in meal_order_tuples)
+            and "Number of meals in delivery does not match user meal constraint"
+        )
 
         meal_orders: list[MealOrder] = [
             MealOrder(meal_id, quantity) for (meal_id, quantity) in meal_order_tuples

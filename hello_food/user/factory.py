@@ -116,21 +116,15 @@ class TrialUserSqlFactory(TrialUserFactory, Identified):
         Creates a new user from a json representation of the user.
         """
 
+        address_id = cls._parse_int_from_json(json_as_dict, "address_id")
         email = cls._parse_str_from_json(json_as_dict, "email")
         name = cls._parse_str_from_json(json_as_dict, "name")
         meals_per_week = cls._parse_int_from_json(json_as_dict, "meals_per_week")
         trial_end_date = cls._parse_int_from_json(json_as_dict, "trial_end_date")
         discount_value = cls._parse_float_from_json(json_as_dict, "discount_value")
 
-        assert (
-            isinstance(json_as_dict.get("address"), Mapping)
-            and "Bad address information provided"
-        )
-        address_factory = get_address_factory()
-        address: Address = address_factory.create_from_json(json_as_dict["address"])
-
         return cls.create_from_values(
-            email, name, meals_per_week, trial_end_date, discount_value, address.id
+            email, name, meals_per_week, trial_end_date, discount_value, address_id
         )
 
 
@@ -209,18 +203,12 @@ class StandardUserSqlFactory(StandardUserFactory, Identified):
         Creates a new standard user from a json representation of the user.
         """
 
+        address_id = cls._parse_int_from_json(json_as_dict, "address_id")
         email = cls._parse_str_from_json(json_as_dict, "email")
         name = cls._parse_str_from_json(json_as_dict, "name")
         meals_per_week = cls._parse_int_from_json(json_as_dict, "meals_per_week")
 
-        assert (
-            isinstance(json_as_dict.get("address"), Mapping)
-            and "Bad address information provided"
-        )
-        address_factory = get_address_factory()
-        address: Address = address_factory.create_from_json(json_as_dict["address"])
-
-        return cls.create_from_values(email, name, meals_per_week, address.id)
+        return cls.create_from_values(email, name, meals_per_week, address_id)
 
 
 def get_trial_user_factory() -> TrialUserFactory:

@@ -15,7 +15,7 @@ from hello_food import (
 )
 
 
-class TestAddressFactory:
+class TestDeliveryFactory:
     __test__ = True
 
     @pytest.fixture(scope="class")
@@ -48,7 +48,7 @@ class TestAddressFactory:
         # Create a trial user
         assigned_email = "test@example.com"
         assigned_name = "John Doe"
-        assigned_meals_per_week = 1
+        assigned_meals_per_week = 4
 
         created_standard_user = standard_user_factory.create_from_values(
             assigned_email,
@@ -126,7 +126,7 @@ class TestAddressFactory:
         # Create a trial user
         assigned_email = "test@example.com"
         assigned_name = "John Doe"
-        assigned_meals_per_week = 1
+        assigned_meals_per_week = 4
 
         created_standard_user = standard_user_factory.create_from_values(
             assigned_email,
