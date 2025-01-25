@@ -4,11 +4,6 @@ on:
   push:
     branches: [master, main, test-*]
 
-permissions:
-  id-token: write
-  contents: read
-  packages: read
-
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
