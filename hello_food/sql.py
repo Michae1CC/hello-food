@@ -1,32 +1,11 @@
 from sqlalchemy import create_engine, Engine, MetaData
 from sqlalchemy.pool import StaticPool
 
-from .environ import CI, PYTEST_VERSION, PROD
+from .environ import CI, PYTEST_VERSION, POSTGRES_HOSTNAME, PROD
 
-# engine = create_engine(
-#     "sqlite+pysqlite:///:memory:",
-#     echo=True,
-#     connect_args={"check_same_thread": False},
-#     poolclass=StaticPool,
-# )
-
-
-def get_sa_engine() -> Engine:
-
-    if CI:
-        print("#################")
-        print("CI")
-        print(CI)
-        return create_engine(
-            "postgresql://webapp:webapp@localhost:5432/webapp", echo=True
-        )
-
-    return create_engine(
-        "postgresql://webapp:webapp@randi1-5.local:5432/webapp", echo=True
-    )
-
-
-engine: Engine = get_sa_engine()
+engine: Engine = create_engine(
+    f"postgresql://webapp:webapp@{POSTGRES_HOSTNAME}:5432/webapp", echo=True
+)
 
 
 def get_sa_metadata() -> MetaData:

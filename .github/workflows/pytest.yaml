@@ -45,3 +45,5 @@ jobs:
     - name: Run tests
       shell: bash
       run: python -m pytest test
+      env:
+        POSTGRES_HOSTNAME: localhost

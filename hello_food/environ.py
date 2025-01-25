@@ -3,6 +3,11 @@ from typing import Final
 import os
 
 """
+The PG database hostname.
+"""
+POSTGRES_HOSTNAME = os.getenv("PYTEST_VERSION") or "localhost"
+
+"""
 Set by pytest when running tests.
 See: https://docs.pytest.org/en/latest/reference/reference.html#envvar-PYTEST_VERSION
 """
