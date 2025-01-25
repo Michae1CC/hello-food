@@ -5,7 +5,7 @@ import os
 """
 The PG database hostname.
 """
-POSTGRES_HOSTNAME = os.getenv("PYTEST_VERSION") or "localhost"
+POSTGRES_HOSTNAME = os.getenv("POSTGRES_HOSTNAME") or "randi1-5.local"
 
 """
 Set by pytest when running tests.
