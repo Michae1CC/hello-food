@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-ARG PYTHON_VERSION=3.12
+ARG PYTHON_VERSION=3.13
 FROM python:${PYTHON_VERSION}-slim AS base
 
 # Prevents Python from writing pyc files.
@@ -12,19 +12,18 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
+# Copy the source code into the container.
+COPY ./setup.py ./setup.cfg README.md ./
+COPY ./hello_food ./hello_food
+
 RUN : \
-    && python -m pip install flask \
-    && python -m pip install sqlalchemy \
-    && python -m pip install psycopg2-binary \
-    && python -m pip install boto3
+    && python -m pip install setuptools \
+    && python -m pip install -e '.'
 
 ARG POSTGRES_HOSTNAME
 ENV POSTGRES_HOSTNAME=${POSTGRES_HOSTNAME}
 ENV AWS_DEFAULT_REGION="us-east-1"
-
-# Copy the source code into the container.
-COPY ./setup.py ./setup.cfg ./
-COPY ./hello_food ./
+ENV FLASK_APP=./hello_food/app.py
 
 # Expose the port that the application listens on.
 EXPOSE 8080
