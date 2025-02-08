@@ -1,32 +1,41 @@
 {
-  "containerDefinitions": [
-    {
-      "name": "nginx-sample",
-      "image": "REPOSITORY_URI:IMAGE_TAG",
-      "portMappings": [
+    "containerDefinitions": [
         {
-          "containerPort": 8080,
-          "protocol": "tcp"
+            "name": "service-container",
+            "image": "<IMAGE1_NAME>",
+            "portMappings": [
+                {
+                    "containerPort": 8080,
+                    "hostPort": 8080,
+                    "protocol": "tcp"
+                }
+            ],
+            "essential": true,
+            "environment": [
+                {
+                    "name": "POSTGRES_HOSTNAME",
+                    "value": "database.com"
+                },
+                {
+                    "name": "PROD",
+                    "value": "1"
+                }
+            ]
         }
-      ],
-      "essential": true,
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "/ecs/nginx-sample",
-          "awslogs-region": "AWS_REGION",
-          "awslogs-stream-prefix": "ecs"
-        }
-      }
+    ],
+    "family": "AppStacktaskdefinition9E6BBACE",
+    "networkMode": "awsvpc",
+    "status": "ACTIVE",
+    "compatibilities": [
+        "FARGATE"
+    ],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "256",
+    "memory": "512",
+    "runtimePlatform": {
+        "cpuArchitecture": "ARM64",
+        "operatingSystemFamily": "LINUX"
     }
-  ],
-  "taskRoleArn": "TASK_EXECUTION_ARN",
-  "executionRoleArn": "TASK_EXECUTION_ARN",
-  "family": "nginx-sample",
-  "networkMode": "awsvpc",
-  "requiresCompatibilities": [
-    "FARGATE"
-  ],
-  "cpu": "256",
-  "memory": "512"
 }
