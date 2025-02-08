@@ -61,7 +61,7 @@ def create_app() -> Flask:
         with engine.connect() as db_connection:
             db_connection.execute(sa.text("SELECT 1"))
 
-        return make_response("PASSTEST", HTTPStatus.OK)
+        return make_response("PASSTEST1", HTTPStatus.OK)
 
     def attach_api(
         methods: list[
