@@ -20,9 +20,20 @@
           "name": "PROD",
           "value": "1"
         }
-      ]
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "AppStack-apploggroup2A45551A-lZR3TBUtL2jZ",
+          "mode": "non-blocking",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        },
+        "secretOptions": []
+      }
     }
   ],
+  "taskRoleArn": "arn:aws:iam::202533509701:role/AppStack-taskdefinitionTaskRoleAB145429-xoGS9v0UFw3Z",
   "executionRoleArn": "arn:aws:iam::202533509701:role/AppStack-taskdefinitionExecutionRole296ABE85-sHWIDdyfVCIF",
   "family": "AppStacktaskdefinition9E6BBACE",
   "networkMode": "awsvpc",
